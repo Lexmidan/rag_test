@@ -1,9 +1,21 @@
 """test_app.py"""
 from streamlit.testing.v1 import AppTest
 
-def test_increment_and_add():
+def test_initia_view():
     """A user increments the number input, then clicks Add"""
-    at = AppTest.from_file("src/app.py").run()
-    at.number_input[0].increment().increment().run()
-    at.button[0].click().run()
-    assert at.markdown[0].value == "Beans counted: 2"
+    at = AppTest.from_file("src/app.py")
+    at.run()
+
+    # empty api key, no messages
+    assert at.text_input("anthropic_api_key").value is None
+    assert len(at.info) == 0
+
+    # try asking a question
+    question = at.text_input("question")
+    question.set_value("Are there any movies from the Czech Republic?").run()
+
+    # new message is displayed
+    assert "Please add your Anthropic API key" in at.info[-1].value
+
+
+
