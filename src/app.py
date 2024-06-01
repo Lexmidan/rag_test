@@ -79,7 +79,7 @@ def run_query(question: str) -> str:
     client = anthropic.Client(api_key=anthropic_api_key)
     response = client.completions.create(
         prompt=prompt,
-        stop_sequences=[anthropic.HUMAN_PROMPT],
+        stop_sequences=[anthropic.HUMAN_PROMPT, "</answer>"],
         model="claude-2",
         max_tokens_to_sample=100,
     )
