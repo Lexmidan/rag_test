@@ -38,7 +38,7 @@ def get_embeddings(question: str) -> list[float]:
         try:
             return vo.embed([question], model=VOYAGE_MODEL, input_type="query").embeddings[0]
         except voyageai.error.RateLimitError:
-            st.warning("API limit reached, please wait")
+            st.warning("API limit reached, please wait 1 minute")
             timer = st.progress(0)
             for i in range(1,61):
                 time.sleep(1)
@@ -46,9 +46,9 @@ def get_embeddings(question: str) -> list[float]:
 
 @st.cache_data
 def run_query(question: str, chunks: list[tuple]) -> str:
-    instructions = """You are a helpful assistant that answers user questions about the book Peter Pan by Sir James Matthew Barrie.
+    instructions = """You are an assistant that answers user questions about the book Peter Pan by James Matthew Barrie.
     
-    Answer the question below based solely on the snippets provided, using citations as appropriate.
+    Answer the question below briefly and based solely on the snippets provided, using citations as appropriate.
     Note that the snippets are provided in the order in which they appear in the book.
     """
     by_chapter = sorted(chunks, key=operator.itemgetter(2))
@@ -89,7 +89,7 @@ def run_query(question: str, chunks: list[tuple]) -> str:
 
     return response.completion
 
-st.title("📖 Peter Pan")
+st.title("📖 Bookworm")
 
 question = st.text_input(
     "Ask something about Peter Pan",
