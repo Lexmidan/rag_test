@@ -6,7 +6,7 @@ import pandas as pd
 import streamlit as st
 import anthropic
 
-def get_response(messages: list[dict], api_key) -> str:
+def get_response(messages, api_key) -> str:
     """Calls the Antropic Messages API with the conversation 
     asking for another message in the sequence.
     """

@@ -30,7 +30,7 @@ def get_chapters() -> dict:
         return pickle.load(fp)
 
 @st.cache_data
-def get_embeddings(question: str) -> list[float]:
+def get_embeddings(question: str) -> list:
     """Calls the Voyage API to get embeddings for a given question"""
     vo = voyageai.Client(api_key=voyage_api_key)
 
@@ -45,7 +45,7 @@ def get_embeddings(question: str) -> list[float]:
                 timer.progress(i/60)
 
 @st.cache_data
-def run_query(question: str, chunks: list[tuple]) -> str:
+def run_query(question: str, chunks: list) -> str:
     instructions = """You are an assistant that answers user questions about the book Peter Pan by James Matthew Barrie.
     
     Answer the question below briefly and based solely on the snippets provided, using citations as appropriate.

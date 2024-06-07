@@ -86,7 +86,7 @@ def run_query(question: str) -> str:
 
 @st.cache_data
 def check_querry(llm_output: str) -> str:
-    prompt = f"""{anthropic.HUMAN_PROMPT} You will be given a chatbot output. Check if it contain any legit SQL query. If it does extract it and return JUST the query. If it doesn't contain any query return 'SELECT 1 WHERE 1 = 0;' 
+    prompt = f"""{anthropic.HUMAN_PROMPT} You will be given a chatbot output. Check if it contains any legit SQL query. If it does extract it and return JUST the query. If it doesn't contain any query return 'SELECT 1 WHERE 1 = 0;' 
 
     Respond ONLY with the SQL code between a pair of <sql> and </sql> tags. Do not output any other text, description or explanation. See <examples> for reference.
 
@@ -114,7 +114,7 @@ def check_querry(llm_output: str) -> str:
     </output>
     {anthropic.AI_PROMPT}<answer>"""
 
-    st.write(f"Calling Claude at {datetime.now()} for querry checking")
+    st.write(f"Calling Claude at {datetime.now()} for query checking")
 
     client = anthropic.Client(api_key=anthropic_api_key)
     response = client.completions.create(
