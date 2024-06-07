@@ -33,19 +33,10 @@ def run_query(question: str) -> str:
 
     """
 
-    prompt = f"""{anthropic.HUMAN_PROMPT} Your goal is to generate a SQL query that answers a user question provided below in the <question> tag, using additional information from <context>. 
-    See <examples> for reference.
+    prompt = f"""{anthropic.HUMAN_PROMPT} You must generate an SQL query that would help a user with his question in the <question> tag. Use additional info in <context>. 
 
-    You can only respond in one of two ways:
-    1. If you have enought information to generate a valid SQL query, respond with the SQL code between a pair of <sql> and </sql> tags. Do not output any other text, description or explanation
-    2. Otherwise respond only with the phrase 'I don't know'. Do not use the <sql> or </sql> tags or any other text, description or explanation
+    Respond ONLY with the SQL code between a pair of <sql> and </sql> tags. Do not output any other text, description or explanation. See <examples> for reference.
 
-    <context>
-    {hardcoded_context}
-    </context>
-    <question>
-    {question}
-    </question>
     <examples>
         <example>
             <question>How many French TV shows are there?</question>
@@ -72,6 +63,13 @@ def run_query(question: str) -> str:
             <answer>I don't know</answer>
         </example>
     </examples>
+
+    <context>
+    {hardcoded_context}
+    </context>
+    <question>
+    {question}
+    </question>
     {anthropic.AI_PROMPT}<answer>"""
 
     st.write(f"Calling Claude at {datetime.now()}")
@@ -81,9 +79,52 @@ def run_query(question: str) -> str:
         prompt=prompt,
         stop_sequences=[anthropic.HUMAN_PROMPT, "</answer>"],
         model="claude-2",
-        max_tokens_to_sample=100,
+        max_tokens_to_sample=300,
     )
     return response.completion
+
+
+@st.cache_data
+def check_querry(llm_output: str) -> str:
+    prompt = f"""{anthropic.HUMAN_PROMPT} You will be given a chatbot output. Check if it contain any legit SQL query. If it does extract it and return JUST the query. If it doesn't contain any query return 'SELECT 1 WHERE 1 = 0;' 
+
+    Respond ONLY with the SQL code between a pair of <sql> and </sql> tags. Do not output any other text, description or explanation. See <examples> for reference.
+
+    <examples>
+        <example>
+            <output>Certainly! I can help you to build the querry. Here it is <sql>SELECT COUNT(*) FROM titles WHERE type = 'TV Show' AND country = 'France';</sql> </output>
+            <answer><sql>SELECT COUNT(*) FROM titles WHERE type = 'TV Show' AND country = 'France';</sql></answer>
+        </example>
+        <example>
+            <output>I don't know</output>
+            <answer><sql>SELECT 1 WHERE 1 = 0;</sql></answer>
+        </example>
+        <example>
+            <output>You can find films with Leonardo DiCaprio using this querry SELECT title, director, release_year FROM titles WHERE starring LIKE '%Leonardo DiCaprio%' AND starring LIKE '%Kate Winslet%'</sql> This querry sekects title, director and release year...</output>
+            <answer><sql>SELECT title, director, release_year FROM titles WHERE starring LIKE '%Leonardo DiCaprio%' AND starring LIKE '%Kate Winslet%'</sql></answer>
+        </example>
+        <example>
+            <output>Sorry I'm not sure how to do it</output>
+            <answer><sql>SELECT 1 WHERE 1 = 0;</sql></answer>
+        </example>
+    </examples>
+
+    <output>
+    {llm_output}
+    </output>
+    {anthropic.AI_PROMPT}<answer>"""
+
+    st.write(f"Calling Claude at {datetime.now()} for querry checking")
+
+    client = anthropic.Client(api_key=anthropic_api_key)
+    response = client.completions.create(
+        prompt=prompt,
+        stop_sequences=[anthropic.HUMAN_PROMPT, "</answer>"],
+        model="claude-2",
+        max_tokens_to_sample=300,
+    )
+    return response.completion
+
 
 st.title("📝 Netflix Q&A with Anthropic")
 
@@ -103,9 +144,12 @@ if question:
     st.write("### Response")
     st.write(response)
 
+    # Check if there is a SQL query in the response, extract it and run it
+    sql_query = check_querry(response)
+
     # Disply the answer
     st.write("### Query")
-    if match := re.search(r"<sql>(.*)</sql>", response, re.DOTALL):
+    if match := re.search(r"<sql>(.*)</sql>", sql_query, re.DOTALL):
         query = match.group(1)
         st.write(query)
 
