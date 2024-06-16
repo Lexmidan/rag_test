@@ -26,7 +26,7 @@ def similarity_score(a, b):
 
 @st.cache_resource
 def get_chapters() -> dict:
-    with open("data/tokens.pkl", "rb") as fp:
+    with open("C:\\Users\\aleks\\Projects\\arameic-mishmash\\rag_test\\data\\tokens.pkl", "rb") as fp:
         return pickle.load(fp)
 
 @st.cache_data
@@ -128,5 +128,9 @@ if question:
         response = run_query(question, chunks)
         st.write("### Response")
         st.write(response)
+        st.write("### Context")
+        for score, chunk, _, chapter_id, chapter_title in chunks[:3]:
+            st.write(f"**Chapter {chapter_id}: {chapter_title}**")
+            st.write(chunk)
     else:
         st.error("Unable to find sufficient context")
