@@ -2,4 +2,5 @@
 
 Petr was here
 
-Alex was here as well
+
+<small>Alex was here as well</small>
