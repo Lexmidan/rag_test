@@ -26,11 +26,11 @@ def similarity_score(a, b):
 
 @st.cache_resource
 def get_chapters() -> dict:
-    with open("data/tokens.pkl", "rb") as fp:
+    with open("C:\\Users\\aleks\\Projects\\arameic-mishmash\\rag_test\\data\\tokens.pkl", "rb") as fp:
         return pickle.load(fp)
 
 @st.cache_data
-def get_embeddings(question: str) -> list[float]:
+def get_embeddings(question: str) -> list:
     """Calls the Voyage API to get embeddings for a given question"""
     vo = voyageai.Client(api_key=voyage_api_key)
 
@@ -45,7 +45,7 @@ def get_embeddings(question: str) -> list[float]:
                 timer.progress(i/60)
 
 @st.cache_data
-def run_query(question: str, chunks: list[tuple]) -> str:
+def run_query(question: str, chunks: list) -> str:
     instructions = """You are an assistant that answers user questions about the book Peter Pan by James Matthew Barrie.
     
     Answer the question below briefly and based solely on the snippets provided, using citations as appropriate.
@@ -128,5 +128,9 @@ if question:
         response = run_query(question, chunks)
         st.write("### Response")
         st.write(response)
+        st.write("### Context")
+        for score, chunk, _, chapter_id, chapter_title in chunks[:3]:
+            st.write(f"**Chapter {chapter_id}: {chapter_title}**")
+            st.write(chunk)
     else:
         st.error("Unable to find sufficient context")
